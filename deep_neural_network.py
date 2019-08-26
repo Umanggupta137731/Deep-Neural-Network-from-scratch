@@ -894,7 +894,7 @@ def predict(parameters, X, keep_prob=1):
 
 
 def main():
-    data = pd.read_csv('H:\\Forecasting and Neural Networks Projects\\forecasting\\series.csv')
+    data = pd.read_csv('series.csv')
     data.head()
 
     data.Series.loc[data.Series == 0] = 0.01
