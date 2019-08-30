@@ -30,43 +30,6 @@ plt.rcParams['image.cmap'] = 'gray'
 np.random.seed(1) # set a seed so that the results are consistent
 
 
-def initialize_parameters(n_x, n_h, n_y):
-    """
-    Argument:
-    n_x -- size of the input layer
-    n_h -- size of the hidden layer
-    n_y -- size of the output layer
-
-    Returns:
-    params -- python dictionary containing your parameters:
-                    W1 -- weight matrix of shape (n_h, n_x)
-                    b1 -- bias vector of shape (n_h, 1)
-                    W2 -- weight matrix of shape (n_y, n_h)
-                    b2 -- bias vector of shape (n_y, 1)
-    """
-
-    np.random.seed(2)  # we set up a seed so that your output matches ours although the initialization is random.
-
-    ### START CODE HERE ### (≈ 4 lines of code)
-    W1 = np.random.randn(n_h, n_x) * 0.01
-    b1 = np.zeros((n_h, 1))
-    W2 = np.random.randn(n_y, n_h) * 0.01
-    b2 = np.zeros((n_y, 1))
-    ### END CODE HERE ###
-
-    assert (W1.shape == (n_h, n_x))
-    assert (b1.shape == (n_h, 1))
-    assert (W2.shape == (n_y, n_h))
-    assert (b2.shape == (n_y, 1))
-
-    parameters = {"W1": W1,
-                  "b1": b1,
-                  "W2": W2,
-                  "b2": b2}
-
-    return parameters
-
-
 def initialize_parameters_deep(layer_dims):
     """
     Arguments:
@@ -694,101 +657,6 @@ def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.01,
     return parameters, v, s
 
 
-def two_layer_model(X, Y, layers_dims, lambd, keep_prob, learning_rate=0.0075, num_iterations=3000, print_cost=False):
-    """
-    Implements a two-layer neural network: LINEAR->RELU->LINEAR->SIGMOID.
-
-    Arguments:
-    X -- input data, of shape (n_x, number of examples)
-    Y -- true "label" vector (containing 1 if cat, 0 if non-cat), of shape (1, number of examples)
-    layers_dims -- dimensions of the layers (n_x, n_h, n_y)
-    num_iterations -- number of iterations of the optimization loop
-    learning_rate -- learning rate of the gradient descent update rule
-    print_cost -- If set to True, this will print the cost every 100 iterations
-
-    Returns:
-    parameters -- a dictionary containing W1, W2, b1, and b2
-    """
-
-    np.random.seed(1)
-    grads = {}
-    costs = []  # to keep track of the cost
-    m = X.shape[1]  # number of examples
-    (n_x, n_h, n_y) = layers_dims
-    D_cache=1
-
-    # Initialize parameters dictionary, by calling one of the functions you'd previously implemented
-    ### START CODE HERE ### (≈ 1 line of code)
-    parameters = initialize_parameters(n_x, n_h, n_y)
-    ### END CODE HERE ###
-
-    # Get W1, b1, W2 and b2 from the dictionary parameters.
-    W1 = parameters["W1"]
-    b1 = parameters["b1"]
-    W2 = parameters["W2"]
-    b2 = parameters["b2"]
-
-    # Loop (gradient descent)
-
-    for i in range(0, num_iterations):
-
-        # Forward propagation: LINEAR -> RELU -> LINEAR -> SIGMOID. Inputs: "X, W1, b1, W2, b2". Output: "A1, cache1, A2, cache2".
-        ### START CODE HERE ### (≈ 2 lines of code)
-        if keep_prob == 1:
-            A1, cache1 = linear_activation_forward(X, W1, b1, "relu")
-        elif keep_prob <  1:
-            A1, cache1, D_cache = forward_propagation_with_dropout(X, W1, b1, keep_prob)
-        A2, cache2 = linear_activation_forward(A1, W2, b2, "sigmoid")
-        ### END CODE HERE ###
-
-        # Compute cost
-        ### START CODE HERE ### (≈ 1 line of code)
-        cost = compute_cost(A2, Y)
-        ### END CODE HERE ###
-
-        # Initializing backward propagation
-        dA2 = - (np.divide(Y, A2) - np.divide(1 - Y, 1 - A2))
-
-        # Backward propagation. Inputs: "dA2, cache2, cache1". Outputs: "dA1, dW2, db2; also dA0 (not used), dW1, db1".
-        ### START CODE HERE ### (≈ 2 lines of code)
-        dA1, dW2, db2 = linear_activation_backward(dA2, cache2, "sigmoid", lambd, 1, D_cache)
-        dA0, dW1, db1 = linear_activation_backward(dA1, cache1, "relu", lambd, keep_prob, D_cache)
-        ### END CODE HERE ###
-
-        # Set grads['dWl'] to dW1, grads['db1'] to db1, grads['dW2'] to dW2, grads['db2'] to db2
-        grads['dW1'] = dW1
-        grads['db1'] = db1
-        grads['dW2'] = dW2
-        grads['db2'] = db2
-
-        # Update parameters.
-        ### START CODE HERE ### (approx. 1 line of code)
-        parameters = update_parameters(parameters, grads, learning_rate)
-        ### END CODE HERE ###
-
-        # Retrieve W1, b1, W2, b2 from parameters
-        W1 = parameters["W1"]
-        b1 = parameters["b1"]
-        W2 = parameters["W2"]
-        b2 = parameters["b2"]
-
-        # Print the cost every 100 training example
-        if print_cost and i % 100 == 0:
-            print("Cost after iteration {}: {}".format(i, np.squeeze(cost)))
-        if print_cost and i % 100 == 0:
-            costs.append(cost)
-
-    # plot the cost
-
-    plt.plot(np.squeeze(costs))
-    plt.ylabel('cost')
-    plt.xlabel('iterations (per hundreds)')
-    plt.title("Learning rate =" + str(learning_rate))
-    plt.show()
-
-    return parameters
-
-
 def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, print_cost=False, lambd=0, mini_batch_size = 64,
           beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8, num_epochs = 16000, keep_prob=1):
     # lr was 0.009
@@ -806,8 +674,6 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, print_cost=False, lam
     Returns:
     parameters -- parameters learnt by the model. They can then be used to predict.
     """
-    X = X.reshape(1,X.shape[0])
-    Y = Y.reshape(Y.shape[0],1)
     seed = 10
     t=0
 
@@ -883,7 +749,6 @@ def predict(parameters, X, keep_prob=1):
     Returns
     predictions -- vector of predictions of our model (red: 0 / blue: 1)
     """
-    X = X.reshape(1,X.shape[0])
     # Computes probabilities using forward propagation, and classifies to 0/1 using 0.5 as the threshold.
     ### START CODE HERE ### (≈ 2 lines of code)
     AL, cache, D_cache = L_model_forward(X, parameters, keep_prob)
@@ -907,12 +772,17 @@ def main():
     actual_vals = data.Series.values
     y = data.AnomalyClass.values
     seasons, period = season_period(data2['y'])
-
-    params = L_layer_model(actual_vals[:len(data)-5],y[:len(data)-5],[1,period.astype('int'),1], 0.00075, num_epochs=3000,
+    X = actual_vals[:len(data)-5]
+    Y = y[:len(data)-5]
+    X = X.reshape(1, X.shape[0])
+    Y = Y.reshape(Y.shape[0], 1)
+    params = L_layer_model(X,Y,[1,period.astype('int'),1], 0.00075, num_epochs=3000,
                            mini_batch_size=(len(data)-2))
-    Y_hat_train = predict(params, actual_vals[:len(data)-5])
+    Y_hat_train = predict(params, X)
     print("Train Accuracy=" , np.count_nonzero(np.equal(Y_hat_train,y[:len(data)-5])==True)/len(y[:len(data)-5]))
-    Y_hat_test = predict(params, actual_vals[len(data)-5:])
+    X_test = actual_vals[len(data)-5:]
+    X_test = X_test.reshape(1, X_test.shape[0])
+    Y_hat_test = predict(params, X_test)
     print("Test Accuracy= ", np.count_nonzero(np.equal(Y_hat_test,y[len(data)-5:])==True)/len(y[len(data)-5:]))
 
 
